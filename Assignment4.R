@@ -1,8 +1,8 @@
 # Peer-graded Assignment: Getting and Cleaning Data Course Project
 # Luis David Bedon Gomez
+
 setwd("~/Coursera/DataAnalysis")
 library(dplyr)
-
 ####################################################################################
 # Step 1: Getting the data
 
@@ -18,7 +18,7 @@ if(!file.exists("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")){
 
 ## Get the data:
 
-pm25<-readRDS("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")#,stringsAsFactors = FALSE
+NEI<-readRDS("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")#,stringsAsFactors = FALSE
 
 ####################################################################################
 # Question 1: Have total emissions from PM2.5 decreased in the United States from 1999 to 2008?
@@ -27,24 +27,28 @@ pm25<-readRDS("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")#,stringsAsFactors 
 ## Therefore a ------ by Percentile and Year is chosen
 
 ### Take the last 50 1000-quantiles
-tailquantile<-tail(quantile(pm25$Emissions,1:1000/1000),50)
+tailquantile<-tail(quantile(NEI$Emissions,1:1000/1000),50)
 
-### Create function to summarize the data per quantile and year
-chart<-function(x) pm25[pm25$Emissions<=x,]%>% group_by(year)%>%summarize(sum=sum(Emissions),max(Emissions),N=length(Emissions),Mean=mean(Emissions),Avg=sum/N)
+### Create function to summarize the data per quantile and year if 
+### this variable does not exist. Takes time to calculate!!
+if(!file.exists("charts.RDS")){
+chart<-function(x) NEI[NEI$Emissions<=x,]%>% group_by(year)%>%summarize(sum=sum(Emissions),max(Emissions),N=length(Emissions),Mean=mean(Emissions),Avg=sum/N)
 charts<-lapply(tailquantile,chart)
-
-#charts<-readRDS("charts.RDS")
+saveRDS(charts,file="charts.RDS")
+}else {
+charts<-readRDS("charts.RDS")
+}
 
 ###########################################
 ## Barplot wie sie es wollen, aber mit meinen Überlegungen
 
-dev.off()
+
 ###
 png(filename = "plot1.png",width=600,height = 480)
 ### Adjust margin
 par("mar"=c(5,6,5,3))
 ### Create initial barplot
-barplot(charts[[50]][[2]],names.arg = c(charts[[10]][[1]]),ylab="Sum of the PM2.5-Emission-Data, \n[ppm]",xlab="Year", col=rgb(0,0,0,0),ylim=c(0.1,8e6))
+barplot(charts[[50]][[2]],names.arg = c(charts[[10]][[1]]),ylab="Sum of the PM2.5-Emission-Data, \n[tons]",xlab="Year", col=rgb(0,0,0,0),ylim=c(0.1,8e6))
 title(main="Sum of the given PM2,5-Emission-Data \nby 1000th-quantiles and Year")
 
 ### Create function to add the next bars for the other quantiles

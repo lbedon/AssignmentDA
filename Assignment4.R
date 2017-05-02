@@ -1,4 +1,4 @@
-# Peer-graded Assignment: Getting and Cleaning Data Course Project
+# Peer-graded Assignment: Course Project 2 Exploratory Data Analysis
 # Luis David Bedon Gomez
 
 setwd("~/Coursera/DataAnalysis")
@@ -16,15 +16,16 @@ if(!file.exists("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")){
   unzip(filename)
 }
 
-## Get the data:
-
+## Get the data (and do not read the file if the Variable exists!!):
+if(!exists("NEI")){
 NEI<-readRDS("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")#,stringsAsFactors = FALSE
+}
 
 ####################################################################################
 # Question 1: Have total emissions from PM2.5 decreased in the United States from 1999 to 2008?
 
-## A quick boxplot show extremely high values that could be wrong meassurements.
-## Therefore a ------ by Percentile and Year is chosen
+## A quick boxplot showed extremely high values that could be wrong meassurements.
+## Therefore a quick analysis by Percentile and Year is chosen
 
 ### Take the last 50 1000-quantiles
 tailquantile<-tail(quantile(NEI$Emissions,1:1000/1000),50)
@@ -39,9 +40,8 @@ saveRDS(charts,file="charts.RDS")
 charts<-readRDS("charts.RDS")
 }
 
-###########################################
-## Barplot wie sie es wollen, aber mit meinen Überlegungen
-
+####################################################################################
+## Making the Barplot:
 
 ###
 png(filename = "plot1.png",width=600,height = 480)
@@ -51,7 +51,7 @@ par("mar"=c(5,6,5,3))
 barplot(charts[[50]][[2]],names.arg = c(charts[[10]][[1]]),ylab="Sum of the PM2.5-Emission-Data, \n[tons]",xlab="Year", col=rgb(0,0,0,0),ylim=c(0.1,8e6))
 title(main="Sum of the given PM2,5-Emission-Data \nby 1000th-quantiles and Year")
 
-### Create function to add the next bars for the other quantiles
+### Create function to add the next bars for the other 10 1000th-quantiles
 addbar <- function(x) barplot(charts[[x]][[2]],add=TRUE,col=rgb(.5,.5,.5,.2),axes=FALSE)
 sapply(40:49,addbar)
 
